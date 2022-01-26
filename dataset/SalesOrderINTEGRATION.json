@@ -1,8 +1,8 @@
 {
-	"name": "SalesOrdersODS",
+	"name": "SalesOrderINTEGRATION",
 	"properties": {
 		"linkedServiceName": {
-			"referenceName": "AzureSqlDatabase2",
+			"referenceName": "AzureSqlDatabase4",
 			"type": "LinkedServiceReference"
 		},
 		"annotations": [],
@@ -80,11 +80,21 @@
 				"name": "LastEditedWhen",
 				"type": "datetime2",
 				"scale": 7
+			},
+			{
+				"name": "IsActive",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "SurrogateKey",
+				"type": "int",
+				"precision": 10
 			}
 		],
 		"typeProperties": {
-			"schema": "Sales",
-			"table": "Orders"
+			"schema": "dbo",
+			"table": "SalesOrders"
 		}
 	}
 }
