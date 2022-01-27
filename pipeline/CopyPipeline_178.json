@@ -75,7 +75,7 @@
 				}
 			},
 			{
-				"name": "AddingSurrogateKey",
+				"name": "scd2Orders",
 				"type": "ExecuteDataFlow",
 				"dependsOn": [
 					{
@@ -95,7 +95,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataflow": {
-						"referenceName": "AddingSurrogateKey",
+						"referenceName": "scd2Orders",
 						"type": "DataFlowReference"
 					},
 					"compute": {
