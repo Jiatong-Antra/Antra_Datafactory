@@ -68,6 +68,16 @@
 				"name": "LastEditedWhen",
 				"type": "datetime2",
 				"scale": 7
+			},
+			{
+				"name": "IsActive",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "SurrogateKey",
+				"type": "int",
+				"precision": 10
 			}
 		],
 		"typeProperties": {
