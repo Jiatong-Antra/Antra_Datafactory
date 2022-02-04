@@ -1,0 +1,67 @@
+{
+	"name": "scd2Packagetypes",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "WarehousePackagetypesODS",
+						"type": "DatasetReference"
+					},
+					"name": "WarehousePackagetypes"
+				},
+				{
+					"dataset": {
+						"referenceName": "WarehousePackagetypesINTEGRATION",
+						"type": "DatasetReference"
+					},
+					"name": "WarehousePackagetypesTable"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "WarehousePackagetypesINTEGRATION",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				},
+				{
+					"dataset": {
+						"referenceName": "WarehousePackagetypesINTEGRATION",
+						"type": "DatasetReference"
+					},
+					"name": "sink2"
+				}
+			],
+			"transformations": [
+				{
+					"name": "AddingIsActive"
+				},
+				{
+					"name": "SurrogateKey1"
+				},
+				{
+					"name": "Select1"
+				},
+				{
+					"name": "Lookup1"
+				},
+				{
+					"name": "ExistingRows"
+				},
+				{
+					"name": "Select2"
+				},
+				{
+					"name": "DerivedColumn1"
+				},
+				{
+					"name": "AlterRow1"
+				}
+			],
+			"script": "source(output(\n\t\tPackageTypeID as integer,\n\t\tPackageTypeName as string,\n\t\tLastEditedBy as integer,\n\t\tValidFrom as timestamp,\n\t\tValidTo as timestamp\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: true,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> WarehousePackagetypes\nsource(output(\n\t\tPackageTypeID as integer,\n\t\tPackageTypeName as string,\n\t\tLastEditedBy as integer,\n\t\tValidFrom as timestamp,\n\t\tValidTo as timestamp,\n\t\tIsActive as integer,\n\t\tSurrogateKey as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> WarehousePackagetypesTable\nWarehousePackagetypes derive(IsActive = 1) ~> AddingIsActive\nAddingIsActive keyGenerate(output(SurrogateKey as long),\n\tstartAt: 1L) ~> SurrogateKey1\nWarehousePackagetypesTable select(mapColumn(\n\t\tSQL_PackageTypeID = PackageTypeID,\n\t\tSQL_PackageTypeName = PackageTypeName,\n\t\tSQL_LastEditedBy = LastEditedBy,\n\t\tSQL_ValidFrom = ValidFrom,\n\t\tSQL_ValidTo = ValidTo,\n\t\tSQL_IsActive = IsActive,\n\t\tSQL_SurrogateKey = SurrogateKey\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> Select1\nWarehousePackagetypes, Select1 lookup(PackageTypeID == SQL_PackageTypeID,\n\tmultiple: true,\n\tbroadcast: 'auto')~> Lookup1\nLookup1 filter(!isNull(SQL_PackageTypeID)) ~> ExistingRows\nExistingRows select(mapColumn(\n\t\tSQL_PackageTypeID,\n\t\tSQL_PackageTypeName,\n\t\tSQL_LastEditedBy,\n\t\tSQL_ValidFrom,\n\t\tSQL_ValidTo,\n\t\tSQL_IsActive,\n\t\tSQL_SurrogateKey\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> Select2\nSelect2 derive(SQL_IsActive = 0) ~> DerivedColumn1\nDerivedColumn1 alterRow(updateIf(1==1)) ~> AlterRow1\nSurrogateKey1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tPackageTypeID as integer,\n\t\tPackageTypeName as string,\n\t\tLastEditedBy as integer,\n\t\tValidFrom as timestamp,\n\t\tValidTo as timestamp,\n\t\tIsActive as integer,\n\t\tSurrogateKey as integer\n\t),\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tsaveOrder: 2,\n\terrorHandlingOption: 'stopOnFirstError',\n\tmapColumn(\n\t\tPackageTypeID,\n\t\tPackageTypeName,\n\t\tLastEditedBy,\n\t\tValidFrom,\n\t\tValidTo,\n\t\tIsActive,\n\t\tSurrogateKey\n\t)) ~> sink1\nAlterRow1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tPackageTypeID as integer,\n\t\tPackageTypeName as string,\n\t\tLastEditedBy as integer,\n\t\tValidFrom as timestamp,\n\t\tValidTo as timestamp,\n\t\tIsActive as integer,\n\t\tSurrogateKey as integer\n\t),\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:true,\n\tupsertable:false,\n\tkeys:['SurrogateKey'],\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tsaveOrder: 1,\n\terrorHandlingOption: 'stopOnFirstError',\n\tmapColumn(\n\t\tPackageTypeID = SQL_PackageTypeID,\n\t\tPackageTypeName = SQL_PackageTypeName,\n\t\tLastEditedBy = SQL_LastEditedBy,\n\t\tValidFrom = SQL_ValidFrom,\n\t\tValidTo = SQL_ValidTo,\n\t\tIsActive = SQL_IsActive,\n\t\tSurrogateKey = SQL_SurrogateKey\n\t)) ~> sink2"
+		}
+	}
+}
